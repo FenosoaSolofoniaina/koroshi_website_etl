@@ -70,7 +70,7 @@ class KoroshiProductsListExtractor(AbstractAPIExtractor) :
             if len(productElements):
                 for prodElm in productElements :
                     try :
-                        products_list.append(f"{products['url-prefix']}{prodElm.attrs[products['attribute']]}")
+                        products_list.append(f"{products['url-prefix']}{prodElm.attrs[products['attribute']].strip()}")
                 
                     except KeyError :
                         self.logger.error(f"Element \"{products["selector"]}\" has no attribute '{products['attribute']}'")

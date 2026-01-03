@@ -22,6 +22,7 @@ polars==1.36.1
 polars-runtime-32==1.36.1
 polars-runtime-compat==1.36.1
 psycopg2-binary==2.9.11
+pyarrow==22.0.0
 pydantic==2.12.5
 pydantic_core==2.41.5
 pyparsing==3.3.1

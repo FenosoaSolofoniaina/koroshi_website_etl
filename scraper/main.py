@@ -25,7 +25,7 @@ def get_all_products_list(configuration: Any, log_file: str) -> str :
     while True :
 
         # /!\ A enlever ce bout de code si necessaire /!\
-        # Pour le test, on va se limiter à faire 3 pagination
+        # Pour le test, on va se limiter à faire 2 pagination
         if page > 3 :
             logging.warning(f"Aborting pagination")
             break
@@ -165,7 +165,7 @@ def main() -> None :
                                                  log_file=os.path.join(BASE_DIR, 'logs/products_data.log')
                                                 )
         
-        #products_data_fp = "/home/fenosoa/Projects/data_engineer/koroshi_etl/koroshi_website_etl/./scripts/json/products_data_2025-12-20.json"
+        #products_data_fp = "path"
         print(products_data_fp)
         load_data_to_db(data_fp=products_data_fp,
                         log_file=os.path.join(BASE_DIR, 'logs/to_db.log'))

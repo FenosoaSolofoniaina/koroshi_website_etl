@@ -68,11 +68,10 @@ class KoroshiDataLoader() :
         df = dataframe.to_pandas()
         
         if self.db_engine is not None :
-            with self.db_engine.begin() as connection:
-                df.to_sql(name=self.table,
+            df.to_sql(name=self.table,
                         schema=self.schema, 
-                        con=connection,
-                        if_exists="append",
+                        con=self.db_engine,
+                        if_exists="replace",
                         index=False)
                 
             self.logger.info(f"Data injected into the table '{self.schema}.{self.table}'")
