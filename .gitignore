@@ -1,4 +1,4 @@
 __pycache__
-./.env
-./*.csv
-./*.ipynb
+.env
+*.csv
+*.ipynb
