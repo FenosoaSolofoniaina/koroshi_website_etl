@@ -1,0 +1,2 @@
+[2026-01-31 18:49:02,934] [INFO] [KoroshiProductsListExtractor.send_request()] Try to send a request to 'https://koroshishop.com/fr-fi/collections/ceintures-pour-femmes'
+[2026-01-31 18:49:04,670] [INFO] [KoroshiProductsListExtractor.send_request()] Got response (200) from 'https://koroshishop.com/fr-fi/collections/ceintures-pour-femmes'
