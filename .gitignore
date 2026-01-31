@@ -1,6 +1,2 @@
 __pycache__
 .env
-*.csv
-*.ipynb
-postgres-db-volume/data/
-fake-*
