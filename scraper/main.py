@@ -5,23 +5,36 @@ from typing import Any
 from dotenv import load_dotenv
 
 from utils.utilities import read_json, to_json
-from extraction.extract import KoroshiProductsListExtractor, KoroshiProductDataExtractor
-from loading.load import KoroshiDataLoader
+from extract.extract_data import KoroshiProductsListExtractor, KoroshiProductDataExtractor
+from load.load_data import KoroshiDataLoader
 
 
 
 # ============================================================================= #
 # ============================== PRODUCTS LIST ================================ #
 # ============================================================================= #
-def get_all_products_list(configuration: Any, log_file: str) -> str :
+def get_all_products_list(configuration: Any,
+                          log_file: str) -> str :
+    """
+    Extract products' link, save into a json file and return the path of this file
+        
+        Args
+            configuration : [Any type] : object data that contains configuration how to extract data
+            log_file : [string] : the file path where log will be saved
 
-    # Output
+        Return
+            [string] : file path where data is stored
+
+    """
+
+    # Variable that contains all products' link
     all_products = []
 
     koroshi_products_list_scraper = KoroshiProductsListExtractor(configuration=configuration,
                                                                  file_log=log_file)
     page = 1
 
+    # Loop to extract links along url
     while True :
 
         # /!\ A enlever ce bout de code si necessaire /!\
@@ -31,10 +44,10 @@ def get_all_products_list(configuration: Any, log_file: str) -> str :
             break
         # /!\
 
-        # L'url par défaut
+        # First url
         url = configuration["main-url"]
         
-        # Cas où on procède à la pagination
+        # Get next page url
         if page > 1 :
             url = koroshi_products_list_scraper.next_page(url=url,
                                                           n_page=page)
@@ -69,24 +82,36 @@ def get_all_products_list(configuration: Any, log_file: str) -> str :
 # ============================== PRODUCTS DATA ================================ #
 # ============================================================================= #
 
-def get_all_products_data(products_list_fp: str, log_file: str) -> str:
+def get_all_products_data(products_list_fp: str,
+                          log_file: str) -> str:
     
+    """
+    Extract data about the product provided by his url
+        
+        Args
+            products_list_fp : [string] : file path where data that contains products'link
+            log_file : [string] : the file path where log will be saved
+
+        Return
+            [string] : the file path where data is saved
+    """
+    
+    # Contains all data of each product
     products_data = []
 
     # Extraction de la liste des produits contenu dans un fichier json
     products_list = read_json(fp=products_list_fp)
 
+    # Get products' link
     if products_list is not None :
         
         koroshi_products_data_scraper = KoroshiProductDataExtractor(file_log=log_file)
         
+        # Loop to extract data about each product provided by the product_url
         for product_url in products_list :
-
             logging.info(f" === Extraction of product data started ===")
-            
             current_product_data = koroshi_products_data_scraper.extract_product_data(product_url=product_url)
             products_data.extend(current_product_data)
-
             logging.info(f" === Extraction of product data finished. Exit with code 0 === \n")
 
     # Save data into a json file
@@ -102,28 +127,36 @@ def get_all_products_data(products_list_fp: str, log_file: str) -> str:
 # ============================== LOAD INTO DATABASE =========================== #
 # ============================================================================= #
 
-def load_data_to_db(data_fp: str, log_file: str) -> None :
+def load_data_to_db(data_fp: str,
+                    log_file: str) -> None :
+    """
+    Job description
+        
+        Args
+            data_fp : [string] : file path that contains data to insert to the database
+            log_file : [string] : file path where log will be write
+    """
 
+    # Environment variables
     load_dotenv()
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
-    HOST = os.getenv("HOST")
-    PORT = os.getenv("PORT")
-    DBNAME = os.getenv("DBNAME")
-    SCHEMA = os.getenv("SCHEMA")
-    TABLE_NAME = os.getenv("TABLE_NAME")
+    DB_USER = os.getenv("DB_USER", "")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    HOST = os.getenv("HOST", "")
+    PORT = os.getenv("PORT", '')
+    DBNAME = os.getenv("DBNAME", "")
+    SCHEMA = os.getenv("SCHEMA", None)
+    TABLE_NAME = os.getenv("TABLE_NAME", "")
     
-    connection_url = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DBNAME}"
-    
-    dataloader = KoroshiDataLoader(connection_url=connection_url,
+    # Connection to the PostgreSQL database
+    dataloader = KoroshiDataLoader(connection_url=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DBNAME}",
                                    schema=SCHEMA,
                                    table=f"{TABLE_NAME}_{datetime.now().date().__str__().replace('-', '_')}",
                                    file_log=log_file)
-    df = dataloader.from_json(fp=data_fp)
+    # Extract data from json file
+    df = dataloader.convert_json_to_dataframe(fp=data_fp)
 
+    # Insert data into the database
     if df is not None:
-        #print(df.head(20))
-
         df.write_csv('koroshi_data.csv')
         logging.info(f"Data saved into csv file")
 
@@ -133,12 +166,14 @@ def load_data_to_db(data_fp: str, log_file: str) -> None :
 # ================================================================================================================== #
 # ============================================ MAIN FUNCTION ======================================================= #
 # ================================================================================================================== #
-
 def main() -> None :
+    """
+    The main function that execute the pipeline
+    """
 
     # Variables d'environnements
     load_dotenv()
-    CONFIGURATION_FP = os.getenv('CONFIGURATION_FILE_PATH')
+    CONFIGURATION_FP = os.getenv('CONFIGURATION_FILE_PATH', '')
     BASE_DIR = os.path.dirname(__file__)
 
     logging.basicConfig(filename=os.path.join(BASE_DIR, 'logs/main.log'),
@@ -154,22 +189,22 @@ def main() -> None :
 
     if json_config is not None :
         
-        # Extraction and saving products list
+        # Extract and save products list
         products_list_fp = get_all_products_list(configuration=json_config,
                                                  log_file = os.path.join(BASE_DIR, 'logs/products_list.log')
                                                 )
                                                 
         
-        # Extraction and saving products data
+        # Extract and save products data
         products_data_fp = get_all_products_data(products_list_fp=products_list_fp,
                                                  log_file=os.path.join(BASE_DIR, 'logs/products_data.log')
                                                 )
         
-        #products_data_fp = "path"
-        print(products_data_fp)
+        # Load data extracted into a PostgreSQL database
+       
         load_data_to_db(data_fp=products_data_fp,
                         log_file=os.path.join(BASE_DIR, 'logs/to_db.log'))
-    
+        
     logging.info("======================= PROGRAM FINISHED =======================")
 
 

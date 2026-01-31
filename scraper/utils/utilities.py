@@ -55,8 +55,6 @@ def to_json(fp: str,
             fp : [string] : the path where to store data
             obj : [Any type] : the data to be stored
 
-        Return
-
         Raises
             [PermissionError] : when having no permission on writting into the file
             [Exception] : for other exception

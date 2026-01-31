@@ -11,21 +11,18 @@ from bs4 import BeautifulSoup
 # ======================================================================= AbstractAPIExtractor ======================================================================= #
 # ==================================================================================================================================================================== #
 class AbstractAPIExtractor() :
-    """
-        Base class to use when getting data from an API, do not implement this class, it'is for making an abstract base class
-    """
+
 
     def __init__(self,
                  configuration: Any=None,
                  file_log: str=None) -> None :
         """
+        Base class to use when getting data from an API, do not implement this class, it'is for making an abstract base class
         Constructor : initialise the log management and the configuration file
             
             Args
                 configuration : [Any type] : object that store configurations using by the function inside this class and his inheritance
                 file_log : [string] : the path where to store logs during the runtime execution when calling/using this class
-
-            Return
         """
 
         self.configuration = configuration
@@ -87,16 +84,15 @@ class AbstractAPIExtractor() :
 
 
 # ==================================================================================================================================================================== #
-# ======================================================================= AbstractAPIExtractor ======================================================================= #
+# ======================================================================= KoroshiProductsListExtractor ======================================================================= #
 # ==================================================================================================================================================================== #
 class KoroshiProductsListExtractor(AbstractAPIExtractor) :
-    """
-        Provide some feature to extract list of url of products 
-    """
+
 
     def __init__(self, *args, **kwargs) -> None :
         """
-            Initialize super class and the configuration to use for performing the behaviour of each function inside the class
+            Provide some feature to extract list of url of products (specially from websitr Koroshi) 
+            Constructor: Initialize super class and the configuration to use for performing the behaviour of each function inside the class
         """
 
         AbstractAPIExtractor.__init__(self, *args, **kwargs)
@@ -181,16 +177,16 @@ class KoroshiProductsListExtractor(AbstractAPIExtractor) :
 
 
 # ==================================================================================================================================================================== #
-# ======================================================================= AbstractAPIExtractor ======================================================================= #
+# ======================================================================= KoroshiProductDataExtractor ======================================================================= #
 # ==================================================================================================================================================================== #
 class KoroshiProductDataExtractor(AbstractAPIExtractor):
-    """
-        Provide some feature to extract data of each product
-    """
+    
+    
 
     def __init__(self, *args, **kwargs) -> None :
         """
-            Initialize super class and the configuration to use for performing the behaviour of each function inside the class
+            Provide some feature to extract data of each product
+            Constructor: initialize super class and the configuration to use for performing the behaviour of each function inside the class
         """
 
         AbstractAPIExtractor.__init__(self, *args, **kwargs)
@@ -207,7 +203,7 @@ class KoroshiProductDataExtractor(AbstractAPIExtractor):
                 url : [string] : the url to the product
 
             Return
-                [List of object] : list that stores data about the product into dictionary
+                [List of object] : list that stores data variants about the product into dictionary
         """
 
         # The output data
@@ -244,10 +240,10 @@ class KoroshiProductDataExtractor(AbstractAPIExtractor):
         When we got the url of the product, we extract all data about that product
             
             Args
-                product_url : [url] : 
+                product_url : [url] : the product's link
 
             Return
-                [list of object] : 
+                [list of object] : list that contains data about the product
         """
         
         # The output data
