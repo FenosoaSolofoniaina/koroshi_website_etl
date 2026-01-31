@@ -157,8 +157,8 @@ def load_data_to_db(data_fp: str,
 
     # Insert data into the database
     if df is not None:
-        df.write_csv('koroshi_data.csv')
-        logging.info(f"Data saved into csv file")
+        #df.write_csv('koroshi_data.csv')
+        #logging.info(f"Data saved into csv file")
 
         dataloader.insert_data(df)
             
