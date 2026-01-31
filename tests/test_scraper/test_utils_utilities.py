@@ -21,9 +21,9 @@ def test_read_json() :
     TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     
     # test `read_json` function with a not existing file
-    json_config = read_json(fp=os.path.join(TESTS_PATH, "scraper/configuration.json"))
+    json_config = read_json(fp=os.path.join(TESTS_PATH, "test_scraper/configuration.json"))
     assert json_config is None
     
     # test `read_json` function with an existing file
-    json_config = read_json(fp=os.path.join(TESTS_PATH, "scraper/config.json"))
+    json_config = read_json(fp=os.path.join(TESTS_PATH, "test_scraper/config.json"))
     assert json_config is not None
