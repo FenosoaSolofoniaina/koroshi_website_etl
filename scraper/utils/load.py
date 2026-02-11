@@ -3,7 +3,7 @@ import polars as pl
 from datetime import datetime
 from dotenv import load_dotenv
 
-from load.load_data import KoroshiDataLoader
+from load.load_data import KoroshiDataBaseLoader, KoroshiDataCloudLoader
 
 
 
@@ -11,7 +11,7 @@ from load.load_data import KoroshiDataLoader
 # ============================== LOAD INTO DATABASE =========================== #
 # ============================================================================= #
 
-def load_data_to_db(data_fp: str,
+def load_data_to_db(data: pl.DataFrame,
                     log_file: str) -> None :
     """
     Job description
@@ -32,16 +32,30 @@ def load_data_to_db(data_fp: str,
     TABLE_NAME = os.getenv("TABLE_NAME", "")
     
     # Connection to the PostgreSQL database
-    dataloader = KoroshiDataLoader(connection_url=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DBNAME}",
+    dataloader = KoroshiDataBaseLoader(connection_url=f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DBNAME}",
                                    schema=SCHEMA,
                                    table=f"{TABLE_NAME}_{datetime.now().date().__str__().replace('-', '_')}",
                                    file_log=log_file)
-    # Extract data from json file
-    df = dataloader.convert_json_to_dataframe(fp=data_fp)
-
     # Insert data into the database
-    if df is not None:
-        #df.write_csv('koroshi_data.csv')
-        #logging.info(f"Data saved into csv file")
+    if data is not None:
+        dataloader.insert_data(data)
 
-        dataloader.insert_data(df)
+
+def load_data_to_bigquery(service_account_fp: str,
+                          project: str,
+                          dataset: str,
+                          table: str,
+                          data: pl.DataFrame,
+                          log_file: str) :
+    
+    dataloader = KoroshiDataCloudLoader(service_account_fp=service_account_fp,
+                                       project=project,
+                                       dataset=dataset,
+                                       table=table,
+                                       file_log=log_file)
+    # Insert data into the database
+    if data is not None:
+        dataloader.load_data(data)
+        
+        
+        

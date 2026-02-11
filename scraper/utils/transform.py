@@ -30,6 +30,9 @@ def preprocessing(data: pl.DataFrame,
     data = data.with_columns(
         pl.col('product_gross_price').fill_null(pl.col('product_net_price'))
     )
+    data = data.with_columns(
+        pl.col('product_id').cast(pl.Int64)
+    )
 
     data = data_transformer.convert_to_price(data=data,
                                              column='product_gross_price',

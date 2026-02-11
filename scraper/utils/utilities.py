@@ -89,8 +89,7 @@ def to_json(fp: str,
 # ============================================================================= #
 # =============================== JSON TO DATAFRAME =========================== #
 # ============================================================================= #
-def convert_json_to_dataframe(self,
-                              fp: Any) -> Union[pl.DataFrame, None] :
+def convert_json_to_dataframe(fp: Any) -> Union[pl.DataFrame, None] :
         """
         Read json file to put them into DataFrame format
             
