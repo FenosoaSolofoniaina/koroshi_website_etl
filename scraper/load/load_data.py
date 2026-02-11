@@ -80,39 +80,4 @@ class KoroshiDataLoader() :
             self.logger.info(f"Data injected into the table '{self.schema}.{self.table}'")
 
 
-    def convert_json_to_dataframe(self,
-                  fp: Any) -> Union[pl.DataFrame, None] :
-        """
-        Read json file to put them into DataFrame format
-            
-            Args
-                fp : [string] : the file path where the data was saved
-
-            Return
-                [pl.DataFrame or None] : if not None, we got the data into DataFrame format
-
-            Raises
-                [FileNotFoundError] : when the file at the location :param:fp is missing
-                [PermissionError] : when having no permission on reading the file
-                [Exception] : for other exceptions
-            
-        """
-
-        # The output data
-        result = None
-
-        try :
-            result = pl.read_json(fp)
-            self.logger.info(f"Reading the json file '{fp}' successfully")
-                
-        except FileNotFoundError :
-            self.logger.error(f"Cannot find the json file in location : '{fp}'")
-
-        except PermissionError :
-            self.logger.error(f"Cannot access to the json file in location : '{fp}'")
-
-        except Exception as error :
-            self.logger.error(f"An error occured during reading the json file '{fp}' : {error}")
-            
-        finally :
-            return result
+    
