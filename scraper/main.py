@@ -40,15 +40,15 @@ def main() -> None :
     if json_config is not None :
         
         # Extract and save products list
-        # products_list_fp = get_all_products_list(configuration=json_config,
-        #                                          log_file = os.path.join(BASE_DIR, 'logs/products_list.log')
-        #                                         )
+        products_list_fp = get_all_products_list(configuration=json_config,
+                                                 log_file = os.path.join(BASE_DIR, 'logs/products_list.log')
+                                                )
                                                 
         
-        # # # Extract and save products data
-        # products_data_fp = get_all_products_data(products_list_fp=products_list_fp,
-        #                                          log_file=os.path.join(BASE_DIR, 'logs/products.log')
-        #                                         )
+        # Extract and save products data
+        products_data_fp = get_all_products_data(products_list_fp=products_list_fp,
+                                                 log_file=os.path.join(BASE_DIR, 'logs/products.log')
+                                                )
         # Transform data
         products_data_fp = "/home/fenosoa/Projects/data_engineer/koroshi/scraper/json/products_data_2026-02-11.json"
         df = convert_json_to_dataframe(fp=products_data_fp)

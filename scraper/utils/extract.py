@@ -37,10 +37,12 @@ def get_all_products_list(configuration: Any,
 
         # /!\ A enlever ce bout de code si necessaire /!\
         # Pour le test, on va se limiter à faire 3 pagination
+        '''
         if page > 3 :
             logging.warning(f"Aborting pagination")
             break
         # /!\
+        '''
 
         # First url
         url = configuration["main-url"]
