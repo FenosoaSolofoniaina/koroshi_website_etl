@@ -8,7 +8,7 @@ SCRAPER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
 sys.path.append(SCRAPER_PATH)
 
 
-from scraper.transform.transform_data import remove_tags, remove_white_space, process_price, stringify, check_url
+from scraper.draft.transform import remove_tags, remove_white_space, process_price, stringify, check_url
 
 def test_remove_tags():
 
