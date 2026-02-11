@@ -1,78 +1,122 @@
-from typing import Any
 import re
+import logging
+import polars as pl
 from bs4 import BeautifulSoup
 
 
+class KoroshiDataTransformator() :
 
-def remove_tags(text: str) -> str :
-    """
-    Remove html tags from a text
-        
-        Args
-            text : [string] : text that contains html tags
+  def __init__(self,
+               file_log: str) -> None :
+  
+    # Set the log management
+    self.logger = logging.getLogger(self.__class__.__name__)
+    self.logger.setLevel(logging.INFO)
+    handler = logging.FileHandler(filename=file_log, mode='w')
+    handler.setFormatter(logging.Formatter('[%(asctime)s] [%(levelname)s] [%(name)s.%(funcName)s()] %(message)s'))
+    self.logger.addHandler(handler)
+    
 
-        Return
-            [string] : raw text without html tags
-    """
+  def remove_tags(self,
+                  data: pl.DataFrame,
+                  columns: list[str]) -> pl.DataFrame :
+    
+    for col in columns :
+      data = data.with_columns(
+        pl.col(col)
+          .map_elements(function=lambda text: BeautifulSoup(text, "html.parser").get_text(" ", strip=True),
+                        return_dtype=pl.String)
+          .alias(col)
+      )
+      self.logger.info(f"Remove tags on column : '{col}'")
 
-    return BeautifulSoup(text, "html.parser").get_text(" ", strip=True)
+    return data
+  
 
+  def stringify_values(self,
+                       data: pl.DataFrame,
+                       columns: list[str]) -> pl.DataFrame :
+    
+    for col in columns :
+      data = data.with_columns(
+        pl.col(col)
+          .cast(pl.String)
+          .alias(col)
+      )
+      self.logger.info(f"Stringify column : '{col}'")
 
-def remove_white_space(text: str) -> str :
-    """
-    Uniform text into title type format
-        
-        Args
-            text : [string] : the text to processed
+    return data
+  
 
-        Return
-            [string] : formated text
-    """
+  def to_uppercase(self,
+                   data: pl.DataFrame,
+                   columns: list[str]) -> pl.DataFrame :
+    
+    for col in columns :
+      data = data.with_columns(
+        pl.col(col).str.to_uppercase().alias(col)
+      )
+      self.logger.info(f"Uppercase column : '{col}'")
 
-    return text.strip()
-
-
-def process_price(value: Any) -> float:
-    """
-    Back to the real value of the price
-        
-        Args
-            value : [Any type] : the value to be converted, it can be in string, int or float format
-
-        Return
-            [float] : the real value
-    """
-    return float(value) / 100
-
-
-def check_url(url: str,
-              pattern: str) -> bool :
-    """
-    Check if the url matches with the pattern
-        
-        Args
-            url : [string] : the url to check
-            pattern : [string] : the pattern that the url must match
-
-        Return
-            [bool] : if the :param:url match with the :param:pattern
-    """
-
-    return re.match(pattern=pattern,
-                    string=url)
+    return data
 
 
-def stringify(value: Any) -> str:
-    """
-    Stringify a value
-        
-        Args
-            value : [Any type] : the objet value to be converted into string, it can be a int or float
+  def to_lowercase(self,
+                   data: pl.DataFrame,
+                   columns: list[str]) -> pl.DataFrame :
+    
+    for col in columns :
+      data = data.with_columns(
+        pl.col(col).str.to_lowercase().alias(col)
+      )
+      self.logger.info(f"Lowercase column : '{col}'")
 
-        Return
-            [string] : the string value of :param:value
-    """
+    return data
+  
 
-    return str(value)
+  def remove_white_space(self,
+                         data: pl.DataFrame,
+                         columns: list[str]) -> pl.DataFrame :
+    
+    for col in columns :
+      data = data.with_columns(
+        pl.col(col).str.strip_chars().alias(col)
+      )
+      self.logger.info(f"Remove white space on column : '{col}'")
+
+    return data
 
 
+  def check_url(self,
+                data: pl.DataFrame,
+                column: str,
+                pattern: str) -> pl.DataFrame :
+      
+
+    output_column = 'is_valid_' + column
+    data = data.with_columns(        
+      pl.col(column)
+        .map_elements(function=lambda url: bool(re.match(pattern=pattern, string=url)),
+                      return_dtype=pl.Boolean
+                      )
+        .alias(output_column)
+    )
+    self.logger.info(f"Check url on the column '{column}', see the column '{output_column}' with value False to look up unmatched data")
+    
+    return data
+
+
+  def convert_to_price(self,
+                       data: pl.DataFrame,
+                       column: str,
+                       currency: str='EUR',
+                       currency_col_name: str='currency') -> pl.DataFrame :
+      
+    # Convert price and add currency
+    data = data.with_columns(
+        pl.col(column).cast(pl.Float64) /  100,
+        pl.lit(currency, dtype=pl.String).alias(currency_col_name)
+    )
+    self.logger.info(f"Convert in price format '{column}' and associate to the currency (have a look on column '{currency_col_name}')")
+
+    return data
