@@ -169,7 +169,7 @@ class KoroshiProductsListExtractor(AbstractAPIExtractor) :
                         string=pagination_config['value'],
                         count=1)
         # Set the new url to the next page url
-        next_page_url = f"{url}{suffix}"
+        next_page_url = f"{url.split('?')[0]}{suffix}"
         self.logger.info(f"Next page link : {next_page_url}")
 
         return next_page_url

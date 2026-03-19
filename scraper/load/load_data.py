@@ -1,3 +1,4 @@
+import io
 import logging
 from typing import Union
 import polars as pl
@@ -129,7 +130,7 @@ class KoroshiDataCloudLoader() :
 
     
     def load_data(self,
-                    dataframe: pl.DataFrame) -> None :
+                  dataframe: pl.DataFrame) -> None :
         """
         Insert data into the database
             
@@ -143,16 +144,16 @@ class KoroshiDataCloudLoader() :
             write_disposition="WRITE_APPEND"  # ou WRITE_TRUNCATE
         )
 
-        temp_data_fp = 'data.parquet'
+        temp_data_fp = io.BytesIO()
         dataframe.write_parquet(temp_data_fp)
-        with open(temp_data_fp, "rb") as f:
-            load_job = self.client.load_table_from_file(
-                file_obj=f,
-                destination=self.bg_table_id,
-                job_config=job_config
-            )
+        temp_data_fp.seek(0)
+        load_job = self.client.load_table_from_file(
+            file_obj=temp_data_fp,
+            destination=self.bg_table_id,
+            job_config=job_config
+        )
 
         load_job.result()
-        self.logger.info("Chargement batch réussi 🎉")
+        self.logger.info(f"Chargement batch de {len(dataframe)} lignes réussi 🎉")
 
     

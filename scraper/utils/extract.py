@@ -1,7 +1,9 @@
 import os
+import time
 import logging
 from datetime import datetime
 from typing import Any
+import polars as pl
 
 from utils.utilities import read_json, to_json
 from extract.extract_data import KoroshiProductsListExtractor, KoroshiProductDataExtractor
@@ -12,7 +14,8 @@ from extract.extract_data import KoroshiProductsListExtractor, KoroshiProductDat
 # ============================== PRODUCTS LIST ================================ #
 # ============================================================================= #
 def get_all_products_list(configuration: Any,
-                          log_file: str) -> str :
+                          log_file: str,
+                          is_test: bool=False) -> str :
     """
     Extract products' link, save into a json file and return the path of this file
         
@@ -30,51 +33,45 @@ def get_all_products_list(configuration: Any,
 
     koroshi_products_list_scraper = KoroshiProductsListExtractor(configuration=configuration,
                                                                  file_log=log_file)
-    page = 1
 
     # Loop to extract links along url
-    while True :
-
-        # /!\ A enlever ce bout de code si necessaire /!\
-        # Pour le test, on va se limiter à faire 3 pagination
-        '''
-        if page > 3 :
-            logging.warning(f"Aborting pagination")
-            break
-        # /!\
-        '''
+    for url in configuration["urls"] :
+        
+        page = 1
 
         # First url
-        url = configuration["main-url"]
-        
-        # Get next page url
-        if page > 1 :
-            url = koroshi_products_list_scraper.next_page(url=url,
-                                                          n_page=page)
-        
-        # Extraction de la liste des produits
-        logging.info(f" === Extraction of product list started ===")
-        logging.info(f"Entering in the webpage with url : '{url}'")
-        current_page_products = koroshi_products_list_scraper.get_products_list(url=url)
-        
-        # On casse la boucle au cas où il n'y a plus de produits sur la page
-        if len(current_page_products) == 0 :
-            logging.warning(f"No products found, stop exploring website")
-            break
+        while True :
 
-        all_products.extend(current_page_products)
-        logging.info(f"Got ({len(current_page_products)}) products : {current_page_products[:10]}")
-        logging.info(f" === Extraction of product list finished. Exit with code 0 ===\n")
-        page += 1
+            if is_test and page > 3 : break
+        
+            # Get next page url
+            if page > 1 :
+                url = koroshi_products_list_scraper.next_page(url=url,
+                                                            n_page=page)
+            
+            # Extraction de la liste des produits
+            logging.info(f" === Extraction of product list started ===")
+            logging.info(f"Entering in the webpage with url : '{url}'")
+            current_page_products = koroshi_products_list_scraper.get_products_list(url=url)
+            
+            # On casse la boucle au cas où il n'y a plus de produits sur la page
+            if len(current_page_products) == 0 :
+                logging.warning(f"No products found, stop exploring website")
+                break
+
+            all_products.extend(current_page_products)
+            logging.info(f"Got ({len(current_page_products)}) products : {current_page_products[:10]}")
+            logging.info(f" === Extraction of product list finished. Exit with code 0 ===\n")
+            page += 1
+            time.sleep(1)
 
     logging.info(f"Get ({len(all_products)}) total of products from the website")
     
     # Save data into a json file
-    output_fp = os.path.join(os.path.dirname(__file__),
-                             '..',
-                             f'json/products_list_{datetime.now().date()}.json')
-    to_json(output_fp,
-            all_products)
+    output_fp = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                            '..',
+                            f'raw_data/products_list_{datetime.now().date().__str__().replace('-', '')}.json'))
+    to_json(output_fp, all_products)
 
     return output_fp
 
@@ -116,10 +113,12 @@ def get_all_products_data(products_list_fp: str,
             logging.info(f" === Extraction of product data finished. Exit with code 0 === \n")
 
     # Save data into a json file
-    output_fp = os.path.join(os.path.dirname(__file__),
+    output_fp = os.path.abspath(os.path.join(os.path.dirname(__file__),
                              '..',
-                             f'json/products_data_{datetime.now().date()}.json')
-    to_json(output_fp,
-            products_data)
+                             f'raw_data/products_data_{datetime.now().date().__str__().replace('-', '')}.csv'))
+    
+    dataframe = pl.DataFrame(data=products_data)
+    dataframe.to_pandas().to_csv(output_fp)
+    logging.info(f"Products Data saved into csv file '{output_fp}'")
 
     return output_fp
